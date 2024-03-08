@@ -1,3 +1,7 @@
+"""
+Gui for the game
+"""
+
 from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QFrame
 from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QMessageBox
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QColor, QPen
@@ -8,6 +12,9 @@ from .constants import HELP_TEXT, COLORS
 
 
 class SquareWidget(QWidget):
+    """
+    Square widget used to select color.
+    """
     def __init__(self, color, width, parent=None):
         super().__init__(parent)
         self.width = width
@@ -16,7 +23,7 @@ class SquareWidget(QWidget):
         self.selected = False
         self.pen_width = 3
 
-    def paintEvent(self, event):
+    def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
@@ -39,18 +46,21 @@ class SquareWidget(QWidget):
             self.pen_width = 3
         self.update()
 
-    def enterEvent(self, event):
+    def enterEvent(self, _):
         if not self.selected:
             self.border_color = QColor(Qt.black)
             self.update()
 
-    def leaveEvent(self, event):
+    def leaveEvent(self, _):
         if not self.selected:
             self.border_color = QColor(Qt.transparent)
             self.update()
 
 
 class CircleWidget(QWidget):
+    """
+    Circle widget used for both the fillable circle and type hint circles.
+    """
     def __init__(self, diameter, parent=None):
         super().__init__(parent)
         self.diameter = diameter
@@ -59,7 +69,7 @@ class CircleWidget(QWidget):
         self.selected_color = QColor(Qt.transparent)
         self.fill_color = self.selected_color
 
-    def paintEvent(self, event):
+    def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
@@ -72,18 +82,21 @@ class CircleWidget(QWidget):
             painter.setBrush(self.fill_color)
         painter.drawEllipse(1, 1, self.diameter - 2, self.diameter - 2)
 
-    def enterEvent(self, event):
+    def enterEvent(self, _):
         if self.active_hover:
             self.fill_color = QColor(Qt.lightGray)
             self.update()
 
-    def leaveEvent(self, event):
+    def leaveEvent(self, _):
         if self.active_hover:
             self.fill_color = self.selected_color
             self.update()
 
 
 class HoverLabel(QLabel):
+    """
+    Label that shows border when hovered on.
+    """
     def __init__(self):
         super().__init__()
         self.setStyleSheet("border: 1px solid rgba(0, 0, 0, 0);")
@@ -98,6 +111,9 @@ class HoverLabel(QLabel):
 
 
 class Gui(QMainWindow):
+    """
+    The main graphical interface for the game.
+    """
     def __init__(self):
         super().__init__()
 
@@ -111,16 +127,15 @@ class Gui(QMainWindow):
         self.color_squares = None
         self.check_button = None
 
+        self.width = 320
+        self.height = 500
+
+        self._set_window_properties()
         self._init_ui()
 
-    def _init_ui(self):
-        # Set background color
-        self.setStyleSheet("background-color: white;")
-
+    def _set_window_properties(self):
         # Set the window size
-        width = 320
-        height = 500
-        self.setFixedSize(width, height)
+        self.setFixedSize(self.width, self.height)
 
         # Make the window float if you are using a tiling wm
         self.setWindowFlags(self.windowFlags() | 0x4000000)
@@ -128,11 +143,15 @@ class Gui(QMainWindow):
         # Set title
         self.setWindowTitle('Mastermind')
 
+    def _init_ui(self):
+        # Set background color
+        self.setStyleSheet("background-color: white;")
+
         # Set up top bar
         nav_bar = QFrame(self)
         nav_bar_layout = QHBoxLayout()
         nav_bar.setLayout(nav_bar_layout)
-        nav_bar.setGeometry(0, 0, width, 50)
+        nav_bar.setGeometry(0, 0, self.width, 50)
 
         label = QLabel('Mastermind', self)
         label.setFont(QFont('Impact', 16))
@@ -159,10 +178,10 @@ class Gui(QMainWindow):
         line = QFrame(self)
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
-        line.setGeometry(5, 45, width - 10, 5)
+        line.setGeometry(5, 45, self.width - 10, 5)
 
         game_frame = QFrame(self)
-        game_frame.setGeometry(0, 50, width, height - 30)
+        game_frame.setGeometry(0, 50, self.width, self.height - 30)
 
         # Set up guess circles
         self.circles = []
@@ -171,9 +190,7 @@ class Gui(QMainWindow):
             for col in range(4):
                 circle = CircleWidget(45, game_frame)
                 circle.setFixedSize(46, 46)
-                x = col * 50 + 10
-                y = row * 50 + 10
-                circle.move(x, y)
+                circle.move(col * 50 + 10, row * 50 + 10)
                 self.circles[row].append(circle)
 
         # Set up the hinting circles
@@ -183,9 +200,7 @@ class Gui(QMainWindow):
             for col in range(4):
                 circle = CircleWidget(20, game_frame)
                 circle.setFixedSize(21, 21)
-                x = col * 22 + 220
-                y = row * 50 + 80
-                circle.move(x, y)
+                circle.move(col * 22 + 220, row * 50 + 80)
                 self.hint_circles[row].append(circle)
 
         # Set up the color squares to pick color
@@ -193,9 +208,7 @@ class Gui(QMainWindow):
         for col, color in enumerate(COLORS):
             square = SquareWidget(color, 30, game_frame)
             square.setFixedSize(31, 31)
-            x = col * 39 + 10
-            y = 415
-            square.move(x, y)
+            square.move(col * 39 + 10, 415)
 
             # Use closure to set color in this class instance
             def get_set_color_func(clr, clr_squares):
@@ -239,6 +252,6 @@ class Gui(QMainWindow):
     def get_active_color(self):
         for key, value in self.color_squares.items():
             if value.selected:
-                return key
+                return QColor(key)
 
-        return Qt.transparent
+        return QColor(Qt.transparent)

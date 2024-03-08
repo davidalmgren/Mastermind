@@ -1,3 +1,7 @@
+"""
+Main game file
+"""
+
 import sys
 
 from PyQt5.QtWidgets import QApplication
