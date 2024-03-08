@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QFrame, QHBoxLayout, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QFrame
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QMessageBox
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QColor, QPen
 from PyQt5.QtCore import QByteArray, Qt
 
@@ -203,7 +204,8 @@ class Gui(QMainWindow):
                         value.select(key == clr)
                 return func
 
-            square.mousePressEvent = get_set_color_func(color, self.color_squares)
+            square.mousePressEvent = get_set_color_func(color,
+                                                        self.color_squares)
             self.color_squares[color] = square
 
         self.check_button = QPushButton("Check", game_frame)

@@ -13,7 +13,7 @@ From top to bottom, at each row, click on a circle and pick a color. After filli
 - A green circle means the color and the position are correct.
 - A yellow circle means that the color exists in the combination but the position is not correct.
 - An empty circle means that the color is not in the combination at all.
-"""
+"""  # noqa: E501
 
 COLORS = [QColor(Qt.red).rgba(), QColor(Qt.green).rgba(),
           QColor(Qt.blue).rgba(), QColor(Qt.magenta).rgba(),
