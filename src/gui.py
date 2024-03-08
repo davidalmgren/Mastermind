@@ -68,6 +68,7 @@ class CircleWidget(QWidget):
         self.active_hover = False
         self.selected_color = QColor(Qt.transparent)
         self.fill_color = self.selected_color
+        self.pen_width = 1
 
     def paintEvent(self, _):
         painter = QPainter(self)
@@ -75,7 +76,7 @@ class CircleWidget(QWidget):
 
         pen = QPen()
         pen.setColor(self.circle_color)
-        pen.setWidth(1)
+        pen.setWidth(self.pen_width)
         painter.setPen(pen)
 
         if self.fill_color:

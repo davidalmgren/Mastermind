@@ -70,9 +70,11 @@ class Game:
         for i, row in enumerate(self.gui.circles):
             for c in row:
                 if i == self.state:
+                    c.pen_width = 2
                     c.active_hover = True
                     c.mousePressEvent = get_toggle_color_func(c)
                 else:
+                    c.pen_width = 1
                     c.active_hover = False
                     # For whatever reason mousePressEvent acts strange if
                     # passed None
