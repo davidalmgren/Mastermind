@@ -30,7 +30,7 @@ class SquareWidget(QWidget):
     def select(self, v):
         if v:
             self.selected = True
-            self.border_color = QColor('black')
+            self.border_color = QColor(Qt.black)
             self.pen_width = 10
         else:
             self.selected = False
@@ -40,7 +40,7 @@ class SquareWidget(QWidget):
 
     def enterEvent(self, event):
         if not self.selected:
-            self.border_color = QColor('black')
+            self.border_color = QColor(Qt.black)
             self.update()
 
     def leaveEvent(self, event):
@@ -53,9 +53,9 @@ class CircleWidget(QWidget):
     def __init__(self, diameter, parent=None):
         super().__init__(parent)
         self.diameter = diameter
-        self.circle_color = QColor('black')
+        self.circle_color = QColor(Qt.black)
         self.active_hover = False
-        self.selected_color = QColor('white')
+        self.selected_color = QColor(Qt.transparent)
         self.fill_color = self.selected_color
 
     def paintEvent(self, event):
@@ -73,7 +73,7 @@ class CircleWidget(QWidget):
 
     def enterEvent(self, event):
         if self.active_hover:
-            self.fill_color = QColor('light grey')
+            self.fill_color = QColor(Qt.lightGray)
             self.update()
 
     def leaveEvent(self, event):
@@ -100,9 +100,10 @@ class Gui(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.day = True
+        self._day = True
+        self._light_widget = None
 
-        self.light_widget = None
+        self.retry_widget = None
 
         self.circles = None
         self.hint_circles = None
@@ -110,7 +111,6 @@ class Gui(QMainWindow):
         self.check_button = None
 
         self._init_ui()
-        self._reset_board(None)
 
     def _init_ui(self):
         # Set background color
@@ -137,13 +137,12 @@ class Gui(QMainWindow):
         label.setFont(QFont('Impact', 16))
 
         # Create option labels
-        retry_widget = HoverLabel()
-        self._set_svg_on_label(retry_widget, SVG_RETRY)
-        retry_widget.mousePressEvent = self._reset_board
+        self.retry_widget = HoverLabel()
+        self._set_svg_on_label(self.retry_widget, SVG_RETRY)
 
-        self.light_widget = HoverLabel()
-        self._set_svg_on_label(self.light_widget, SVG_SUN)
-        self.light_widget.mousePressEvent = self._set_night_or_day
+        self._light_widget = HoverLabel()
+        self._set_svg_on_label(self._light_widget, SVG_SUN)
+        self._light_widget.mousePressEvent = self._set_night_or_day
 
         help_widget = HoverLabel()
         self._set_svg_on_label(help_widget, SVG_HELP)
@@ -151,8 +150,8 @@ class Gui(QMainWindow):
 
         nav_bar_layout.addWidget(label)
         nav_bar_layout.addStretch()
-        nav_bar_layout.addWidget(retry_widget)
-        nav_bar_layout.addWidget(self.light_widget)
+        nav_bar_layout.addWidget(self.retry_widget)
+        nav_bar_layout.addWidget(self._light_widget)
         nav_bar_layout.addWidget(help_widget)
 
         # Create divider line
@@ -178,13 +177,13 @@ class Gui(QMainWindow):
 
         # Set up the hinting circles
         self.hint_circles = []
-        for row in range(8):
+        for row in range(7):
             self.hint_circles.append([])
             for col in range(4):
                 circle = CircleWidget(20, game_frame)
                 circle.setFixedSize(21, 21)
                 x = col * 22 + 220
-                y = row * 40 + 80
+                y = row * 50 + 80
                 circle.move(x, y)
                 self.hint_circles[row].append(circle)
 
@@ -217,41 +216,27 @@ class Gui(QMainWindow):
         widget.setPixmap(pixmap)
 
     def _set_night_or_day(self, _):
-        if self.day:
-            self._set_svg_on_label(self.light_widget, SVG_MOON)
+        if self._day:
+            self._set_svg_on_label(self._light_widget, SVG_MOON)
             self.setStyleSheet("background-color: gray;")
         else:
-            self._set_svg_on_label(self.light_widget, SVG_SUN)
+            self._set_svg_on_label(self._light_widget, SVG_SUN)
             self.setStyleSheet("background-color: white;")
 
-        self.day = not self.day
+        self._day = not self._day
+
+    def spawn_warning(self, title, text):
+        QMessageBox.warning(self, title, text)
+
+    def spawn_information(self, title, text):
+        QMessageBox.information(self, title, text)
 
     def _spawn_help(self, _):
-        QMessageBox.information(self, "Game Rules", HELP_TEXT)
-
-    def _reset_board(self, _):
-        for value in self.color_squares.values():
-            value.select(False)
-
-        for c in self.circles[0]:
-            c.active_hover = True
-            c.selected_color = QColor('white')
-            c.update()
-
-        for i in range(1, len(self.circles)):
-            for c in self.circles[i]:
-                c.active_hover = False
-                c.selected_color = QColor('white')
-                c.update()
-
-        for i in range(len(self.circles)):
-            for c in self.hint_circles[i]:
-                c.selected_color = QColor('white')
-                c.update()
+        self.spawn_information("Game Rules", HELP_TEXT)
 
     def get_active_color(self):
         for key, value in self.color_squares.items():
             if value.selected:
                 return key
 
-        return None
+        return Qt.transparent
