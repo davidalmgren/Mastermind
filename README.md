@@ -7,7 +7,6 @@ Inspired by https://mastermindgame.org/
 
 ## Usage
 
+Install dependencies if needed.
+
 ./run
-
-
-Sorry, you have to install the deps by yourself! :(
